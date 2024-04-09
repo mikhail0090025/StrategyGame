@@ -78,9 +78,13 @@ class Game{
 
         // CREATING PLAYERS
         this.Players = [];
-        this.Players.push(new PlayerPerson("#FF0000", new PlayerCamera(gameMap.PlayersPoints[0])));
+        var personPlayer = new PlayerPerson("#FF0000", new PlayerCamera(gameMap.PlayersPoints[0]));
+        this.Players.push(personPlayer);
+        personPlayer.AttachBuild(new TownHall(gameMap.PlayersPoints[0], 1));
         for (let i = 0; i < playersCount - 1; i++) {
-            this.Players.push(new PlayerAI(BotsColors[i]));
+            var playerBot = new PlayerAI(BotsColors[i]);
+            playerBot.AttachBuild(new TownHall(gameMap.PlayersPoints[i + 1], 1));
+            this.Players.push(playerBot);
         }
         // ATTACHING START BUILDS TO PLAYERS
         this.Players.forEach((player, index) => {
@@ -102,23 +106,17 @@ class GoldMine extends Build{
         super(GoldMine.LevelParameters[level - 1].hp, pos, "Gold mine", "Gold mine extracts gold. Updrade it to get more gold.", level);
     }
 }
-//#endregion
-var gameMap = new GameMap(200, 200, [new Point(10, 10), new Point(10, 190), new Point(190, 10), new Point(190, 190), new Point(100, 100)]);
-var game = new Game(gameMap, 4);
-console.log(JSON.stringify(game));
-function CalcSVGCode(gameMap, playersCamera) {
-    var mainGroup = document.getElementById("mainSVGGroup");
-    AddRect = (x,y,w,h,color) => {
-        var rect = mainGroup.appendChild(document.createElement("rect"));
-        console.log(rect);
-        rect.setAttribute("x", x);
-        rect.setAttribute("y", y);
-        rect.setAttribute("width", w);
-        rect.setAttribute("height", h);
-        rect.setAttribute("fill", color);
+class TownHall extends Build{
+
+    static LevelParameters = [
+        {hp: 4200},
+        {hp: 5100},
+        {hp: 7000}
+    ];
+
+    constructor(pos, level){
+        if(level >= TownHall.LevelParameters.length || level < 1) throw new Error("Level for town hall is invalid");
+        super(TownHall.LevelParameters[level-1].hp, pos, "Town hall", "Main build. If enemy destroys it, game is over (for you😉)", level);
     }
-    AddRect(0,0,gameMap.SizeX,gameMap.SizeY, "#00bb00");
 }
-document.addEventListener("DOMContentLoaded", function() {
-    CalcSVGCode(gameMap, game.Players[0].Camera);
-});
+//#endregion
